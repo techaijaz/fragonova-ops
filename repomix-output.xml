@@ -1,0 +1,1681 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.env.example
+.gitignore
+.husky/commit-msg
+.husky/pre-commit
+.prettierrc
+commitlint.config.js
+docker/Build-Docker-Image.txt
+docker/development/Dockerfile
+docker/production/Dockerfile
+ecosystem.config.js
+eslint.config.mjs
+nginx/.gitkeep
+nginx/http.conf
+nginx/https.conf
+nodemon.json
+package.json
+public/.gitkeep
+README.md
+src/app.js
+src/config/config.js
+src/config/rateLimiter.js
+src/config/sequelize.js
+src/constent/application.js
+src/constent/responceseMessage.js
+src/constent/userConstent.js
+src/controller/apiController.js
+src/controller/userController.js
+src/middleware/authentication.js
+src/middleware/globalErrorHandler.js
+src/middleware/rateLimit.js
+src/model/userModel.js
+src/router/apiRouter.js
+src/server.js
+src/service/.gitkeep
+src/service/databseService.js
+src/service/emailService.js
+src/service/validationService.js
+src/util/errorObject.js
+src/util/httpError.js
+src/util/httpResponse.js
+src/util/loger.js
+src/util/quiker.js
+src/view/.gitkeep
+test/.gitkeep
+test/app.test.js
+test/user.test.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".env.example">
+#genral
+ENV=development
+PORT=8080
+SERVER_URL=http://localhost:8080
+
+#fruntend
+FRONTEND_URL=http://localhost:3030
+
+#email service
+EMAIL_SERVICE_API_KEY=""
+
+#database
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=auth_system
+
+#tokens
+ACCESS_TOKEN_SECRET="your_access_token_secret"
+REFRESH_TOKEN_SECRET="your_refresh_token_secret"
+</file>
+
+<file path=".gitignore">
+node_modules
+dist
+.env.development
+.env.production
+</file>
+
+<file path=".husky/commit-msg">
+npx --no-install commitlint --edit "$1"
+</file>
+
+<file path=".husky/pre-commit">
+npx lint-staged
+</file>
+
+<file path=".prettierrc">
+{
+  "trailingComma": "none",
+  "tabWidth": 4,
+  "semi": false,
+  "singleQuote": true,
+  "bracketSameLine": false,
+  "printWidth": 150,
+  "singleAttributePerLine": true,
+  "endOfLine": "crlf"
+}
+</file>
+
+<file path="docker/Build-Docker-Image.txt">
+>Development
+docker build -t backend-app:dev -f docker/development/Dockerfile .
+docker run --rm -it -v ${PWD}:/user/src/backent-app -v /usr/src/backent-app/node_modules -p 8080:8080 backend-app:dev
+
+>Production
+docker build -t backend-app:dev -f docker/production/Dockerfile .
+docker run --rm -D -v ${PWD}:/user/src/backent-app -v /usr/src/backent-app/node_modules -p 8080:8080 backend-app:1.0.0
+</file>
+
+<file path="docker/development/Dockerfile">
+#using Lightweight Docker image for Node.js
+FROM node:20-alpine as base
+
+#Setting up working directory
+WORKDIR /user/src/backent-app
+
+#Copying packege.json and package-lock.json
+COPY package*.json ./
+
+#Installing dependencies
+RUN npm ci
+
+#Copying source files
+COPY . .
+
+#Exposing port
+EXPOSE 8080
+
+#Running the app
+CMD [ "npm", "run", "dev" ]
+</file>
+
+<file path="docker/production/Dockerfile">
+#Using Lightweight Docker image for Node.js
+FROM node:20-alpine as base
+
+#Setting up working directory
+WORKDIR /user/src/backent-app
+
+#Copying packege.json and package-lock.json
+COPY package*.json ./
+
+#Installing dependencies
+RUN npm ci --only=production
+
+#Copying source files
+COPY . .
+
+# Build TypeScript Project
+RUN npm run build
+
+#Exposing port
+EXPOSE 8080
+
+#Running the app
+CMD [ "npm", "run", "start" ]
+</file>
+
+<file path="ecosystem.config.js">
+
+</file>
+
+<file path="eslint.config.mjs">
+import eslint from '@eslint/js'
+import eslintConfigPrettier from 'eslint-config-prettier'
+import globals from 'globals'
+
+export default [
+    eslint.configs.recommended,
+    eslintConfigPrettier,
+    {
+        languageOptions: {
+            ecmaVersion: 'latest',
+            sourceType: 'module',
+            globals: {
+                ...globals.node
+            }
+        },
+        rules: {
+            'no-console': 'error',
+            'no-useless-catch': 0,
+            quotes: [
+                'error',
+                'single',
+                {
+                    allowTemplateLiterals: true
+                }
+            ]
+        }
+    }
+]
+</file>
+
+<file path="nginx/.gitkeep">
+
+</file>
+
+<file path="nginx/http.conf">
+
+</file>
+
+<file path="nginx/https.conf">
+
+</file>
+
+<file path="nodemon.json">
+{
+    "ext": "js,json",
+    "ignore": ["node_modules/**/*", "dist/**/*", "logs/**/*"],
+    "delay": 1000
+}
+</file>
+
+<file path="public/.gitkeep">
+
+</file>
+
+<file path="README.md">
+
+</file>
+
+<file path="src/config/config.js">
+import dotenvFlow from 'dotenv-flow'
+
+dotenvFlow.config()
+
+export default {
+    // General
+    ENV: process.env.NODE_ENV,
+    PORT: process.env.PORT || 8080,
+    SERVER_URL: process.env.SERVER_URL,
+
+    // Database
+    DB: {
+        HOST: process.env.DB_HOST || 'localhost',
+        PORT: process.env.DB_PORT || 3306,
+        USER: process.env.DB_USER || 'root',
+        PASSWORD: process.env.DB_PASSWORD || '',
+        NAME: process.env.DB_NAME || 'auth_system'
+    },
+
+    // Frontend
+    FRONTEND_URL: process.env.FRONTEND_URL,
+
+    // Email service
+    EMAIL_SERVICE_API_KEY: process.env.EMAIL_SERVICE_API_KEY,
+
+    // Access Token
+    ACCESS_TOKEN: {
+        SECRET: process.env.ACCESS_TOKEN_SECRET,
+        EXPIRY: 3600
+    },
+
+    // Refresh Token
+    REFRESH_TOKEN: {
+        SECRET: process.env.REFRESH_TOKEN_SECRET,
+        EXPIRY: 3600 * 24
+    }
+}
+</file>
+
+<file path="src/config/rateLimiter.js">
+import { RateLimiterMemory } from 'rate-limiter-flexible'
+
+export let rateLimiter = null
+
+const DURATION = 60
+const POINTS = 10
+
+export const initRateLimiter = () => {
+    rateLimiter = new RateLimiterMemory({
+        points: POINTS,
+        duration: DURATION
+    })
+}
+</file>
+
+<file path="src/config/sequelize.js">
+import { Sequelize } from 'sequelize'
+import config from './config.js'
+
+const sequelize = new Sequelize(config.DB.NAME, config.DB.USER, config.DB.PASSWORD, {
+    host: config.DB.HOST,
+    port: config.DB.PORT,
+    dialect: 'mysql',
+    logging: false
+})
+
+export default sequelize
+</file>
+
+<file path="src/constent/application.js">
+export const EApplicationEnvionment = {
+    PRODUCTION: 'production',
+    DEVELOPMENT: 'development'
+}
+</file>
+
+<file path="src/constent/responceseMessage.js">
+export default {
+    SUCCESS: 'The opration has been successful',
+    ERROR: 'The opration has an error',
+    NOT_FOUND: (entity) => `${entity} not found`,
+    TOO_MANY_REQUEST: 'Too many request please try again later',
+    INCORECT_PHONE_NUMBER: 'Incorect phone number',
+    ALREADY_EXIST: (entity, identifire) => {
+        return `${entity} is already exist with ${identifire}`
+    },
+    INVALID_ACCOUNT_CONFIRMATION_TOKEN_OR_CODE: 'Invalid account confirmation token or code',
+    ACCOUNT_ALREADY_CONFIRMED: 'Account already confirmed',
+    INVALID_CREDENTIALS: 'Invalid E-mail or Password, Please try again.',
+    UNAUTHORIZED: 'Unauthorized, please login first',
+    ACCOUNT_CONFIRMATION_REQUIRED: 'Account confirmation required',
+    PASSWORD_RESET_URL_EXPIRED: 'Password reset url expired',
+    INVALID_REQUEST: 'Invalid request',
+    INVALID_OLD_PASSWORD: 'Invalid old password',
+    PASSWORD_MATCHING_WITH_OLD_PASSWORD: 'Password matching with old password'
+}
+</file>
+
+<file path="src/constent/userConstent.js">
+export const EUserRole = {
+    USER: 'user',
+    ADMIN: 'admin'
+}
+</file>
+
+<file path="src/controller/apiController.js">
+import httpResponse from '../util/httpResponse.js'
+import responceseMessage from '../constent/responceseMessage.js'
+import httpError from '../util/httpError.js'
+import quiker from '../util/quiker.js'
+
+export default {
+    self: (req, res, next) => {
+        try {
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, null)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    health: (req, res, next) => {
+        try {
+            const healthData = {
+                application: quiker.getApplicationHealth(),
+                system: quiker.getSystemHealth(),
+                timeStamp: Date.now()
+            }
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, healthData)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    }
+}
+</file>
+
+<file path="src/controller/userController.js">
+import httpResponse from '../util/httpResponse.js'
+import responceseMessage from '../constent/responceseMessage.js'
+import httpError from '../util/httpError.js'
+import {
+    validateJoiSchema,
+    validationLoginBody,
+    validationRegisterBody,
+    validationForgotPasswordBody,
+    validationResetPasswordBody,
+    validationChangePasswordBody
+} from '../service/validationService.js'
+import quiker from '../util/quiker.js'
+import databseService from '../service/databseService.js'
+import { EUserRole } from '../constent/userConstent.js'
+
+import emailService from '../service/emailService.js'
+import loger from '../util/loger.js'
+import config from '../config/config.js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+import { EApplicationEnvionment } from '../constent/application.js'
+dayjs.extend(utc)
+
+export default {
+    register: async (req, res, next) => {
+        try {
+            const { body } = req
+
+            // * body validation
+            const { error, value } = validateJoiSchema(validationRegisterBody, body)
+            if (error) {
+                return httpError(next, error, req, 422)
+            }
+
+            // * phone number parsing and validation
+            const { name, phone, email, password, consent } = value
+            const { countryCode, isoCode, internationalNumber } = quiker.parsePhoneNumber('+' + phone)
+
+            if (!countryCode || !isoCode || !internationalNumber) {
+                return httpError(next, responceseMessage.INCORECT_PHONE_NUMBER, req, 422)
+            }
+
+            // * Timezone
+            const timezone = isoCode ? quiker.countryTimezone(isoCode) : null
+            if (!timezone || !timezone.length) {
+                return httpError(next, responceseMessage.INCORECT_PHONE_NUMBER, req, 422)
+            }
+
+            // * check if user already exist using
+            const user = await databseService.findUserByEmail(email)
+            if (user) {
+                return httpError(next, responceseMessage.ALREADY_EXIST('User', email), req, 422)
+            }
+            // * encrypt password
+            const encryptedPassword = await quiker.hashedPassword(password)
+            const token = quiker.generateRandumId()
+            const code = quiker.generateOtp(6)
+            
+            // * create user (Flattened Payload)
+            const payload = {
+                name,
+                email,
+                phoneIsoCode: isoCode,
+                phoneCountryCode: countryCode,
+                phoneInternationalNumber: internationalNumber,
+                accountConfirmationStatus: false,
+                accountConfirmationToken: token,
+                accountConfirmationCode: code,
+                accountConfirmationTimestamp: null,
+                passwordResetToken: token,
+                passwordResetExpiry: null,
+                passwordResetLastResetAt: null,
+                refreshToken: null,
+                lastLoginAt: null,
+                role: EUserRole.USER,
+                timezone: timezone[0].name,
+                password: encryptedPassword,
+                consent
+            }
+            const newUser = await databseService.registerUser(payload)
+
+            // * send verification email
+            const confirmationalURL = `${config.FRONTEND_URL}/confirmation/${token}?code=${code}`
+            const to = [email]
+            const subject = 'Confirm your account'
+            const text = `Hey ${name}, Please confirm your email by clicking on this link: ${confirmationalURL}\n\n`
+
+            emailService.sendEmail(to, subject, text).catch((error) => loger.error('EMAIL_SERVICE', { meta: error }))
+
+            httpResponse(req, res, 201, responceseMessage.SUCCESS, { id: newUser.id, email: newUser.email, role: newUser.role })
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    confirmation: async (req, res, next) => {
+        try {
+            const { params, query } = req
+            
+            // * confirm user by token and code
+            const user = await databseService.findUserByConfirmationTokenAndCode(params.token, query.code)
+            if (!user) {
+                return httpError(next, new Error(responceseMessage.INVALID_ACCOUNT_CONFIRMATION_TOKEN_OR_CODE), req, 422)
+            }
+
+            //  * account is already confirmed
+            if (user.accountConfirmationStatus) {
+                return httpError(next, new Error(responceseMessage.ACCOUNT_ALREADY_CONFIRMED), req, 422)
+            }
+
+            // * confirm user
+            user.accountConfirmationStatus = true
+            user.accountConfirmationTimestamp = dayjs().utc().toDate()
+            await user.save()
+
+            // * send confirmation email
+            const to = [user.email]
+            const subject = 'Account Confirmed'
+            const text = `Hey ${user.name}, Your account has been successfully confirmed.\n\n`
+            emailService.sendEmail(to, subject, text).catch((error) => loger.error('EMAIL_SERVICE', { meta: error }))
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, {
+                params
+            })
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    login: async (req, res, next) => {
+        try {
+            const { body } = req
+            const { error, value } = validateJoiSchema(validationLoginBody, body)
+            if (error) {
+                return httpError(next, error, req, 422)
+            }
+
+            const { email, password } = value
+            // * find user by email
+            const user = await databseService.findUserByEmail(email)
+            
+            // * validate password
+            if (!user) {
+                return httpError(next, new Error(responceseMessage.NOT_FOUND('User')), req, 404)
+            }
+            const isPasswordMatch = await quiker.comparePassword(password, user.password)
+            if (!isPasswordMatch) {
+                return httpError(next, new Error(responceseMessage.INVALID_CREDENTIALS), req, 404)
+            }
+            
+            // * generate token
+            const accessToken = quiker.genrateToken(
+                { userId: user.id, role: user.role },
+                config.ACCESS_TOKEN.SECRET,
+                config.ACCESS_TOKEN.EXPIRY
+            )
+
+            const refreshToken = quiker.genrateToken(
+                { userId: user.id, role: user.role },
+                config.REFRESH_TOKEN.SECRET,
+                config.REFRESH_TOKEN.EXPIRY
+            )
+            
+            // * update last login and refresh token
+            user.lastLoginAt = dayjs().utc().toDate()
+            user.refreshToken = refreshToken
+            await user.save()
+
+            // * cookie send
+            const DOMAIN = quiker.getDomainFromUrl(config.SERVER_URL)
+
+            res.cookie('accessToken', accessToken, {
+                path: '/api/v1',
+                domain: DOMAIN,
+                sameSite: 'strict',
+                maxAge: 1000 * config.ACCESS_TOKEN.EXPIRY,
+                httpOnly: true,
+                secure: !(config.ENV === EApplicationEnvionment.PRODUCTION)
+            }).cookie('refreshToken', refreshToken, {
+                path: '/api/v1',
+                domain: DOMAIN,
+                sameSite: 'strict',
+                maxAge: 1000 * config.REFRESH_TOKEN.EXPIRY,
+                httpOnly: true,
+                secure: !(config.ENV === EApplicationEnvionment.PRODUCTION)
+            })
+            
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, {
+                accessToken,
+                refreshToken
+            })
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    selfIdentification: async (req, res, next) => {
+        try {
+            const { authenticatedUser } = req
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, authenticatedUser)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    logout: async (req, res, next) => {
+        try {
+            const { cookies } = req
+            const { refreshToken } = cookies
+
+            if (refreshToken) {
+                await databseService.deleteRefreshToken(refreshToken)
+            }
+            const DOMAIN = quiker.getDomainFromUrl(config.SERVER_URL)
+            res.clearCookie('accessToken', {
+                path: '/api/v1',
+                domain: DOMAIN,
+                sameSite: 'strict',
+                httpOnly: true,
+                secure: !(config.ENV === EApplicationEnvionment.PRODUCTION)
+            }).clearCookie('refreshToken', {
+                path: '/api/v1',
+                domain: DOMAIN,
+                sameSite: 'strict',
+                httpOnly: true,
+                secure: !(config.ENV === EApplicationEnvionment.PRODUCTION)
+            })
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, null)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    refresshToken: async (req, res, next) => {
+        try {
+            const { cookies } = req
+            const { refreshToken, accessToken } = cookies
+
+            if (accessToken) {
+                return httpResponse(req, res, 200, responceseMessage.SUCCESS, { accessToken })
+            }
+            if (refreshToken) {
+                const user = await databseService.getRefreshTokan(refreshToken)
+                if (user) {
+                    const DOMAIN = quiker.getDomainFromUrl(config.SERVER_URL)
+                    let userId = null
+                    let role = null
+                    try {
+                        const decryptedjwt = quiker.verifyToken(refreshToken, config.REFRESH_TOKEN.SECRET)
+                        userId = decryptedjwt.userId
+                        role = decryptedjwt.role
+                    } catch (err) {
+                        userId = null
+                    }
+                    
+                    let newAccessToken = null
+                    if (userId) {
+                        newAccessToken = quiker.genrateToken(
+                            { userId: userId, role: role },
+                            config.ACCESS_TOKEN.SECRET,
+                            config.ACCESS_TOKEN.EXPIRY
+                        )
+
+                        res.cookie('accessToken', newAccessToken, {
+                            path: '/api/v1',
+                            domain: DOMAIN,
+                            sameSite: 'strict',
+                            maxAge: 1000 * config.ACCESS_TOKEN.EXPIRY,
+                            httpOnly: true,
+                            secure: !(config.ENV === EApplicationEnvionment.PRODUCTION)
+                        })
+                    }
+                    return httpResponse(req, res, 200, responceseMessage.SUCCESS, { accessToken: newAccessToken })
+                }
+            }
+            return httpError(next, new Error(responceseMessage.UNAUTHORIZED), req, 401)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    forgotPassword: async (req, res, next) => {
+        try {
+            const { body } = req
+            const { error, value } = validateJoiSchema(validationForgotPasswordBody, body)
+            if (error) {
+                return httpError(next, error, req, 422)
+            }
+            const { email } = value
+            const user = await databseService.findUserByEmail(email)
+            if (!user) {
+                return httpError(next, new Error(responceseMessage.NOT_FOUND('User')), req, 404)
+            }
+
+            if (!user.accountConfirmationStatus) {
+                return httpError(next, new Error(responceseMessage.ACCOUNT_CONFIRMATION_REQUIRED), req, 400)
+            }
+
+            const token = quiker.generateRandumId()
+            const expiry = quiker.generateResetPasswordExpiry(15)
+
+            // * update user
+            user.passwordResetToken = token
+            user.passwordResetExpiry = expiry
+            await user.save()
+
+            // * send email
+            const resetlURL = `${config.FRONTEND_URL}/reset-password/${token}`
+            const to = [email]
+            const subject = 'Account Password Reset requested'
+            const text = `Hey ${user.name}, Please reset your email by clicking on this link below \n\nLink will expire in 15 minutes.\n\n ${resetlURL}`
+
+            emailService.sendEmail(to, subject, text).catch((error) => loger.error('EMAIL_SERVICE', { meta: error }))
+
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, null)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    resetPassword: async (req, res, next) => {
+        try {
+            const { body, params } = req
+            const { token } = params
+            const { error, value } = validateJoiSchema(validationResetPasswordBody, body)
+            if (error) {
+                return httpError(next, error, req, 422)
+            }
+            const user = await databseService.findUserByPasswordResetToken(token)
+            if (!user) {
+                return httpError(next, new Error(responceseMessage.NOT_FOUND('User')), req, 404)
+            }
+
+            if (!user.accountConfirmationStatus) {
+                return httpError(next, new Error(responceseMessage.ACCOUNT_CONFIRMATION_REQUIRED), req, 400)
+            }
+
+            const { newPassword } = value
+
+            const storedExpiry = user.passwordResetExpiry
+            const currentExpiry = dayjs().valueOf()
+
+            if (!storedExpiry) {
+                return httpError(next, new Error(responceseMessage.INVALID_REQUEST), req, 400)
+            }
+            if (currentExpiry > storedExpiry) {
+                return httpError(next, new Error(responceseMessage.PASSWORD_RESET_URL_EXPIRED), req, 400)
+            }
+
+            const hashedPassword = await quiker.hashedPassword(newPassword)
+
+            // * update password reset token
+            user.password = hashedPassword
+            user.passwordResetToken = ''
+            user.passwordResetExpiry = null
+            user.passwordResetLastResetAt = dayjs().utc().toDate()
+            await user.save()
+
+            // * send email
+            const to = [user.email]
+            const subject = 'Reset account password'
+            const text = `Hey ${user.name}, Your password has been successfully reset.`
+            emailService.sendEmail(to, subject, text).catch((error) => {
+                loger.error('EMAIL_SERVICE', { meta: error })
+            })
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, null)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    },
+    changePassword: async (req, res, next) => {
+        try {
+            const { body, authenticatedUser } = req
+            const { error, value } = validateJoiSchema(validationChangePasswordBody, body)
+            if (error) {
+                return httpError(next, error, req, 422)
+            }
+            const { oldPassword, newPassword } = value
+
+            const user = await databseService.findUserById(authenticatedUser.id)
+            if (!user) {
+                return httpError(next, new Error(responceseMessage.NOT_FOUND('User')), req, 404)
+            }
+
+            const isPasswordMatch = await quiker.comparePassword(oldPassword, user.password)
+            if (!isPasswordMatch) {
+                return httpError(next, new Error(responceseMessage.INVALID_OLD_PASSWORD), req, 400)
+            }
+
+            if (newPassword === oldPassword) {
+                return httpError(next, new Error(responceseMessage.PASSWORD_MATCHING_WITH_OLD_PASSWORD), req, 400)
+            }
+            const hashedPassword = await quiker.hashedPassword(newPassword)
+            user.password = hashedPassword
+            await user.save()
+
+            // * send email
+            const to = [user.email]
+            const subject = 'Password changed.'
+            const text = `Hey ${user.name}, Your account password has been change successfully.`
+            emailService.sendEmail(to, subject, text).catch((error) => {
+                loger.error('EMAIL_SERVICE', { meta: error })
+            })
+            httpResponse(req, res, 200, responceseMessage.SUCCESS, null)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    }
+}
+</file>
+
+<file path="src/middleware/authentication.js">
+import quiker from '../util/quiker.js'
+import config from '../config/config.js'
+import databseService from '../service/databseService.js'
+import httpError from '../util/httpError.js'
+import responceseMessage from '../constent/responceseMessage.js'
+
+export default async (req, res, next) => {
+    try {
+        const { cookies } = req
+        const { accessToken } = cookies
+
+        if (accessToken) {
+            try {
+                const { userId } = quiker.verifyToken(accessToken, config.ACCESS_TOKEN.SECRET)
+                const user = await databseService.findUserById(userId)
+                if (user) {
+                    req.authenticatedUser = user
+                    return next()
+                }
+            } catch (err) {
+                // Token verification failed
+            }
+        }
+        httpError(next, new Error(responceseMessage.UNAUTHORIZED), req, 401)
+    } catch (error) {
+        httpError(next, error, req, 500)
+    }
+}
+</file>
+
+<file path="src/middleware/globalErrorHandler.js">
+import responceseMessage from '../constent/responceseMessage.js'
+import httpError from '../util/httpError.js'
+
+export const notFoundError = (req, res, next) => {
+    try {
+        throw new Error(responceseMessage.NOT_FOUND('Route'))
+    } catch (error) {
+        httpError(next, error, req, 404) // Changed to 404
+    }
+}
+
+export default (error, req, res, next) => {
+    const statusCode = error.statusCode || 500
+    res.status(statusCode).json(error)
+}
+</file>
+
+<file path="src/middleware/rateLimit.js">
+import { EApplicationEnvionment } from '../constent/application.js'
+import config from '../config/config.js'
+import { rateLimiter } from '../config/rateLimiter.js'
+import httpError from '../util/httpError.js'
+import responceseMessage from '../constent/responceseMessage.js'
+
+export default (req, res, next) => {
+    if (config.ENV === EApplicationEnvionment.DEVELOPMENT) {
+        return next()
+    }
+    if (rateLimiter) {
+        rateLimiter
+            .consume(req.ip, 1)
+            .then(() => {
+                next()
+            })
+            .catch(() => {
+                httpError(next, new Error(responceseMessage.TOO_MANY_REQUEST), req, 429)
+            })
+    } else {
+        next()
+    }
+}
+</file>
+
+<file path="src/model/userModel.js">
+import { DataTypes } from 'sequelize'
+import sequelize from '../config/sequelize.js'
+import { EUserRole } from '../constent/userConstent.js'
+
+const User = sequelize.define(
+    'User',
+    {
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true
+        },
+        name: {
+            type: DataTypes.STRING(72),
+            allowNull: false
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                isEmail: true
+            }
+        },
+        // Phone fields (Flattened)
+        phoneIsoCode: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        phoneCountryCode: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        phoneInternationalNumber: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        timezone: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        role: {
+            type: DataTypes.ENUM(Object.values(EUserRole)),
+            allowNull: false,
+            defaultValue: EUserRole.USER
+        },
+        consent: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
+        // Account Confirmation fields (Flattened)
+        accountConfirmationStatus: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
+        accountConfirmationToken: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        accountConfirmationCode: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        accountConfirmationTimestamp: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        // Password Reset fields (Flattened)
+        passwordResetToken: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        passwordResetExpiry: {
+            type: DataTypes.BIGINT,
+            allowNull: true
+        },
+        passwordResetLastResetAt: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        // Refresh Token
+        refreshToken: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        lastLoginAt: {
+            type: DataTypes.DATE,
+            allowNull: true
+        }
+    },
+    {
+        timestamps: true,
+        tableName: 'users'
+    }
+)
+
+export default User
+</file>
+
+<file path="src/server.js">
+import config from './config/config.js'
+import app from './app.js'
+import logger from './util/loger.js'
+import databseService from './service/databseService.js'
+import { initRateLimiter } from './config/rateLimiter.js'
+
+const server = app.listen(config.PORT, () => {
+    logger.info('APPLICATION STARTED', {
+        meta: {
+            PORT: config.PORT,
+            SERVER_URL: config.SERVER_URL
+        }
+    })
+})
+
+;(async () => {
+    try {
+        const connection = await databseService.connect()
+
+        logger.info('DATABASE CONNECTION', {
+            meta: {
+                CONNECTION_NAME: connection.options.database
+            }
+        })
+
+        initRateLimiter(connection)
+        logger.info('RATE LIMITER INITIATE')
+    } catch (error) {
+        logger.error('APPLICATION START ERROR', { meta: error })
+        server.close(() => {
+            process.exit(1)
+        })
+    }
+})()
+</file>
+
+<file path="src/service/.gitkeep">
+
+</file>
+
+<file path="src/service/databseService.js">
+import User from '../model/userModel.js'
+
+export default {
+    connect: async () => {
+        try {
+            await User.sequelize.authenticate()
+            // Sync models (in production, use migrations)
+            await User.sequelize.sync({ alter: true })
+            return User.sequelize
+        } catch (error) {
+            throw error
+        }
+    },
+    findUserByEmail: (email, select = '') => {
+        // Sequelize doesn't use .select() string like Mongoose
+        // By default it selects all except what's excluded in model definition
+        return User.findOne({ where: { email } })
+    },
+    findUserById: (id) => {
+        return User.findByPk(id)
+    },
+    registerUser: (userData) => {
+        return User.create(userData)
+    },
+    findUserByConfirmationTokenAndCode: (token, code) => {
+        return User.findOne({
+            where: {
+                accountConfirmationToken: token,
+                accountConfirmationCode: code
+            }
+        })
+    },
+    findUserByPasswordResetToken: (token) => {
+        return User.findOne({
+            where: {
+                passwordResetToken: token
+            }
+        })
+    },
+    deleteRefreshToken: (token) => {
+        return User.update(
+            { refreshToken: null },
+            { where: { refreshToken: token } }
+        )
+    },
+    getRefreshTokan: (token) => {
+        return User.findOne({
+            where: { refreshToken: token }
+        })
+    }
+}
+</file>
+
+<file path="src/service/validationService.js">
+import Joi from 'joi'
+
+export const validationRegisterBody = Joi.object({
+    name: Joi.string().required().min(3).max(72).trim(),
+    email: Joi.string().email().required(),
+    phone: Joi.string().min(4).max(20).required(),
+    password: Joi.string().min(8).max(72).required().trim(),
+    consent: Joi.boolean().required().valid(true)
+})
+
+export const validationLoginBody = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).max(72).required().trim()
+})
+
+export const validationForgotPasswordBody = Joi.object({
+    email: Joi.string().email().required()
+})
+
+export const validationResetPasswordBody = Joi.object({
+    newPassword: Joi.string().min(8).max(72).required().trim()
+})
+
+export const validationChangePasswordBody = Joi.object({
+    oldPassword: Joi.string().min(8).max(72).required().trim(),
+    newPassword: Joi.string().min(8).max(72).required().trim()
+})
+
+export const validateJoiSchema = (schema, value) => {
+    const result = schema.validate(value)
+    return {
+        value: result.value,
+        error: result.error?.message
+    }
+}
+</file>
+
+<file path="src/util/errorObject.js">
+import responceseMessage from '../constent/responceseMessage.js'
+import config from '../config/config.js'
+import { EApplicationEnvionment } from '../constent/application.js'
+import logger from './loger.js'
+
+export default (error, req, errorStatusCode = 500) => {
+    const errorObj = {
+        success: false,
+        statusCode: errorStatusCode,
+        request: {
+            ip: req.ip || null,
+            method: req.method,
+            url: req.originalUrl
+        },
+        message: error instanceof Error ? error.message || responceseMessage.ERROR : responceseMessage.ERROR,
+        data: error,
+        trace: error instanceof Error ? { error: error.stack } : null
+    }
+
+    // Log
+    logger.info('CONTROLLER_RESPONSE', {
+        meta: errorObj
+    })
+
+    // Production env check
+    if (config.ENV === EApplicationEnvionment.PRODUCTION) {
+        delete errorObj.request.ip
+        delete errorObj.trace
+    }
+    return errorObj
+}
+</file>
+
+<file path="src/util/httpError.js">
+import errorObject from './errorObject.js'
+
+export default (nextFunction, error, req, errorStatusCode = 500) => {
+    const errorObj = errorObject(error, req, errorStatusCode)
+    return nextFunction(errorObj)
+}
+</file>
+
+<file path="src/util/httpResponse.js">
+import config from '../config/config.js'
+import { EApplicationEnvionment } from '../constent/application.js'
+import logger from '../util/loger.js'
+
+export default (req, res, responseStatusCode, responseMessage, data = null) => {
+    const response = {
+        success: true,
+        statusCode: responseStatusCode,
+        request: {
+            ip: req.ip || null,
+            method: req.method,
+            url: req.originalUrl
+        },
+        message: responseMessage,
+        data: data
+    }
+    
+    // Log
+    logger.info('CONTROLLER_RESPONSE', {
+        meta: response
+    })
+
+    // Production env check
+    if (config.ENV === EApplicationEnvionment.PRODUCTION) {
+        delete response.request.ip
+    }
+
+    res.status(responseStatusCode).json(response)
+}
+</file>
+
+<file path="src/util/loger.js">
+import { createLogger, format, transports } from 'winston'
+import util from 'util'
+import config from '../config/config.js'
+import { EApplicationEnvionment } from '../constent/application.js'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { blue, green, magenta, red, yellow } from 'colorette'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const coloriseLevel = (level) => {
+    switch (level) {
+        case 'ERROR':
+            return red(level)
+        case 'INFO':
+            return blue(level)
+        case 'WARN':
+            return yellow(level)
+        default:
+            return level
+    }
+}
+
+const consoleFormate = format.printf((info) => {
+    const { level, message, timestamp, meta } = info
+    const customLevel = coloriseLevel(level.toUpperCase())
+    const customTimestamp = green(timestamp)
+    const customMeta = util.inspect(meta, {
+        showHidden: false,
+        depth: null,
+        colors: true
+    })
+
+    const customLog = `${customLevel} [${customTimestamp}] ${message} \n ${magenta('META')} ${customMeta}\n`
+    return customLog
+})
+
+const consoleTransport = () => {
+    if (config.ENV === EApplicationEnvionment.DEVELOPMENT) {
+        return [
+            new transports.Console({
+                level: 'info',
+                format: format.combine(format.timestamp(), consoleFormate)
+            })
+        ]
+    }
+    return []
+}
+
+const fileFormate = format.printf((info) => {
+    const { level, message, timestamp, meta } = info
+    const logMeta = {}
+    if (meta) {
+        for (const [key, value] of Object.entries(meta)) {
+            if (value instanceof Error) {
+                logMeta[key] = {
+                    name: value.name,
+                    message: value.message,
+                    stack: value.stack || null
+                }
+            } else {
+                logMeta[key] = value
+            }
+        }
+    }
+
+    const logData = {
+        level: level.toUpperCase(),
+        message,
+        timestamp,
+        meta: logMeta
+    }
+
+    return JSON.stringify(logData, null, 4)
+})
+
+const fileTransport = () => {
+    return [
+        new transports.File({
+            filename: path.join(__dirname, '../', '../', 'logs', `${config.ENV}.log`),
+            level: 'info',
+            format: format.combine(format.timestamp(), fileFormate)
+        })
+    ]
+}
+
+export default createLogger({
+    defaultMeta: {
+        meta: {}
+    },
+    transports: [...fileTransport(), ...consoleTransport()]
+})
+</file>
+
+<file path="src/util/quiker.js">
+import os from 'os'
+import config from '../config/config.js'
+import { parsePhoneNumberWithError } from 'libphonenumber-js'
+import { getTimezonesForCountry } from 'countries-and-timezones'
+import bcrypt from 'bcrypt'
+import { v4 } from 'uuid'
+import { randomInt } from 'crypto'
+import jwt from 'jsonwebtoken'
+import dayjs from 'dayjs'
+
+export default {
+    getSystemHealth: () => {
+        return {
+            cpuUsage: os.loadavg(),
+            totalMemory: `${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB ${(((os.totalmem() - os.freemem()) / os.totalmem()) * 100).toFixed(2)} %`,
+            freeMemory: `${(os.freemem() / 1024 / 1024 / 1024).toFixed(2)} GB`,
+            usedMemory: `${((os.totalmem() - os.freemem()) / 1024 / 1024 / 1024).toFixed(2)} GB`
+        }
+    },
+    getApplicationHealth: () => {
+        return {
+            enviornment: config.ENV,
+            uptime: `${process.uptime().toFixed(2)} seconds`,
+            memoryUsage: {
+                heapTotal: `${(process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2)} MB`,
+                heapUsed: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`
+            }
+        }
+    },
+    parsePhoneNumber: (phoneNumber) => {
+        try {
+            const parsedPhoneNumber = parsePhoneNumberWithError(phoneNumber)
+            if (parsedPhoneNumber) {
+                return {
+                    countryCode: parsedPhoneNumber.countryCallingCode,
+                    isoCode: parsedPhoneNumber.country,
+                    internationalNumber: parsedPhoneNumber.formatInternational()
+                }
+            }
+            return {
+                countryCode: null,
+                isoCode: null,
+                internationalNumber: null
+            }
+        } catch (error) {
+            return {
+                countryCode: null,
+                isoCode: null,
+                internationalNumber: null
+            }
+        }
+    },
+    countryTimezone: (isoCode) => {
+        return getTimezonesForCountry(isoCode)
+    },
+    hashedPassword: (password) => {
+        return bcrypt.hash(password, 10)
+    },
+    comparePassword: (password, hashedPassword) => {
+        return bcrypt.compare(password, hashedPassword)
+    },
+    generateRandumId: () => v4(),
+    generateOtp: (length) => {
+        const min = Math.pow(10, length - 1)
+        const max = Math.pow(10, length) - 1
+        return randomInt(min, max).toString()
+    },
+    genrateToken: (payload, secret, expiry) => {
+        return jwt.sign(payload, secret, { expiresIn: expiry })
+    },
+    verifyToken: (token, secret) => {
+        return jwt.verify(token, secret)
+    },
+    getDomainFromUrl: (requesturl) => {
+        try {
+            const url = new URL(requesturl, config.SERVER_URL)
+            return url.hostname
+        } catch (error) {
+            throw error
+        }
+    },
+    generateResetPasswordExpiry: (minute) => {
+        return dayjs().valueOf() + minute * 60 * 1000
+    }
+}
+</file>
+
+<file path="src/view/.gitkeep">
+
+</file>
+
+<file path="test/.gitkeep">
+
+</file>
+
+<file path="test/app.test.js">
+import { describe, test, expect } from '@jest/globals'
+import request from 'supertest'
+import app from '../src/app.js'
+
+describe('Base Routes', () => {
+    test('GET / should return 200 and server running message', async () => {
+        const response = await request(app).get('/')
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toEqual({ message: 'Server is running!' })
+    })
+
+    test('GET /api/v1/ should return 200 and API working message', async () => {
+        const response = await request(app).get('/api/v1/')
+        expect(response.statusCode).toBe(200)
+        expect(response.body).toEqual({ message: 'API is working!' })
+    })
+
+    test('GET /non-existent-route should return 404', async () => {
+        const response = await request(app).get('/non-existent-route')
+        expect(response.statusCode).toBe(404)
+        expect(response.body.success).toBe(false)
+    })
+})
+</file>
+
+<file path="test/user.test.js">
+import { jest, describe, test, expect, beforeEach, afterAll } from '@jest/globals'
+import request from 'supertest'
+import app from '../src/app.js'
+import databseService from '../src/service/databseService.js'
+
+describe('User Authentication API', () => {
+    let findUserSpy
+    let registerUserSpy
+
+    beforeEach(() => {
+        jest.clearAllMocks()
+        // Use spyOn instead of jest.mock for ESM compatibility in this setup
+        findUserSpy = jest.spyOn(databseService, 'findUserByEmail')
+        registerUserSpy = jest.spyOn(databseService, 'registerUser')
+    })
+
+    afterAll(() => {
+        jest.restoreAllMocks()
+    })
+
+    describe('POST /api/v1/register', () => {
+        const userData = {
+            name: 'Test User',
+            email: 'test@example.com',
+            phone: '911234567890',
+            password: 'password123',
+            consent: true
+        }
+
+        test('should register a new user successfully', async () => {
+            findUserSpy.mockResolvedValue(null)
+            registerUserSpy.mockResolvedValue({
+                id: 'uuid-123',
+                email: 'test@example.com',
+                role: 'user'
+            })
+
+            const response = await request(app)
+                .post('/api/v1/register')
+                .send(userData)
+
+            expect(response.statusCode).toBe(201)
+            expect(response.body.success).toBe(true)
+            expect(response.body.data.email).toBe('test@example.com')
+        })
+
+        test('should return 422 if user already exists', async () => {
+            findUserSpy.mockResolvedValue({ id: 'existing-id' })
+
+            const response = await request(app)
+                .post('/api/v1/register')
+                .send(userData)
+
+            expect(response.statusCode).toBe(422)
+            expect(response.body.success).toBe(false)
+        })
+    })
+
+    describe('GET /api/v1/login', () => {
+        test('should return 404 for non-existent user', async () => {
+            findUserSpy.mockResolvedValue(null)
+
+            const response = await request(app)
+                .get('/api/v1/login')
+                .send({ email: 'wrong@example.com', password: 'password123' })
+
+            expect(response.statusCode).toBe(404)
+        })
+    })
+})
+</file>
+
+<file path="commitlint.config.js">
+export default {
+    extends: ['@commitlint/config-conventional'],
+    rules: {
+        'type-enum': [
+            2,
+            'always',
+            [
+                'feat',
+                'fix',
+                'docs',
+                'style',
+                'refactor',
+                'perf',
+                'test',
+                'build',
+                'ci',
+                'chore',
+                'revert'
+            ]
+        ],
+        'subject-case': [0] // Disabled subject-case for more flexibility, or set to 'sentence-case' if preferred
+    }
+}
+</file>
+
+<file path="package.json">
+{
+    "name": "js-backend-auth-mysql",
+    "version": "1.0.0",
+    "description": "Authentication system with JS and MySQL",
+    "main": "src/server.js",
+    "type": "module",
+    "scripts": {
+        "dev": "cross-env NODE_ENV=development nodemon src/server.js",
+        "start": "cross-env NODE_ENV=production node src/server.js",
+        "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js",
+        "lint": "eslint",
+        "lint:fix": "eslint --fix",
+        "format:check": "prettier . --check",
+        "format:fix": "prettier . --fix",
+        "prepare": "husky"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@commitlint/cli": "^19.5.0",
+        "@commitlint/config-conventional": "^19.5.0",
+        "@eslint/js": "^9.14.0",
+        "eslint": "^9.14.0",
+        "eslint-config-prettier": "^9.1.0",
+        "husky": "^9.1.6",
+        "jest": "^29.7.0",
+        "lint-staged": "^15.2.10",
+        "nodemon": "^3.1.7",
+        "prettier": "3.3.3",
+        "supertest": "^7.0.0"
+    },
+
+    "lint-staged": {
+        "*.js": [
+            "npm run lint:fix",
+            "npm run format:fix"
+        ]
+    },
+
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "colorette": "^2.0.20",
+        "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5",
+        "countries-and-timezones": "^3.7.2",
+        "cross-env": "^7.0.3",
+        "dayjs": "^1.11.13",
+        "dotenv-flow": "^4.1.0",
+        "express": "^4.21.1",
+        "helmet": "^8.0.0",
+        "joi": "^17.13.3",
+        "jsonwebtoken": "^9.0.2",
+        "libphonenumber-js": "^1.11.14",
+        "mysql2": "^3.11.4",
+        "rate-limiter-flexible": "^5.0.4",
+        "resend": "^4.0.1-alpha.0",
+        "sequelize": "^6.37.5",
+        "uuid": "^11.0.3",
+        "winston": "^3.16.0"
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "transform": {}
+    }
+}
+</file>
+
+<file path="src/app.js">
+import express from 'express'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import router from './router/apiRouter.js'
+import globalErrorHandler, { notFoundError } from './middleware/globalErrorHandler.js'
+import helmet from 'helmet'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const app = express()
+
+// Middlewares
+app.use(helmet())
+app.use(cookieParser())
+app.use(
+    cors({
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+        origin: '*',
+        credentials: true
+    })
+)
+app.use(express.json())
+app.use(express.static(path.join(__dirname, '../', 'public')))
+
+// Routes
+app.get('/', (req, res) => {
+    res.status(200).json({ message: 'Server is running!' })
+})
+app.use('/api/v1', router)
+
+
+// 404 Error handler
+app.use(notFoundError)
+
+// Global Error handler
+app.use(globalErrorHandler)
+
+export default app
+</file>
+
+<file path="src/router/apiRouter.js">
+import { Router } from 'express'
+import apiController from '../controller/apiController.js'
+import rateLimit from '../middleware/rateLimit.js'
+import userController from '../controller/userController.js'
+import authentication from '../middleware/authentication.js'
+
+const router = Router()
+
+router.use(rateLimit)
+router.route('/').get((req, res) => {
+    res.status(200).json({ message: 'API is working!' })
+})
+router.route('/self').get(apiController.self)
+
+router.route('/health').get(apiController.health)
+
+// User router
+router.route('/register').post(userController.register)
+router.route('/confirmation/:token').put(userController.confirmation)
+router.route('/login').get(userController.login)
+router.route('/self-identification').get(authentication, userController.selfIdentification)
+router.route('/logout').put(authentication, userController.logout)
+router.route('/refresh-token').post(userController.refresshToken)
+router.route('/forgot-password').put(userController.forgotPassword)
+router.route('/reset-password/:token').put(userController.resetPassword)
+router.route('/change-password').put(authentication, userController.changePassword)
+
+export default router
+</file>
+
+<file path="src/service/emailService.js">
+import { Resend } from 'resend'
+import config from '../config/config.js'
+
+const resend = new Resend(config.EMAIL_SERVICE_API_KEY || 're_dummy_key')
+
+
+export default {
+    sendEmail: async (to, subject, text) => {
+        try {
+            const result = await resend.emails.send({
+                from: 'onboarding@resend.dev',
+                to,
+                subject,
+                html: text
+            })
+
+            return result
+        } catch (error) {
+            throw error
+        }
+    }
+}
+</file>
+
+</files>
