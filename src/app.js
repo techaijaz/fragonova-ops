@@ -22,6 +22,17 @@ app.use(
         credentials: true
     })
 )
+
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/v1/webhooks/shopify')) {
+        express.text({ type: '*/*' })(req, res, () => {
+            next()
+        })
+    } else {
+        next()
+    }
+})
+
 app.use(express.json())
 app.use(express.static(path.join(__dirname, '../', 'public')))
 

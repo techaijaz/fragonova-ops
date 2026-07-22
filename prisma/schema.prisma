@@ -8,7 +8,44 @@ datasource db {
 
 enum Role {
   user
+  manager
   admin
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  NEEDS_DECANTING
+  PACKED
+  SHIPPED
+  DELIVERED
+  RTO
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  FAILED
+  REFUNDED
+}
+
+enum ShipmentStatus {
+  CREATED
+  AWB_ASSIGNED
+  PICKUP_SCHEDULED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  RTO
+  RTO_DELIVERED
+}
+
+enum SourceType {
+  SHOPIFY
+  MANUAL
 }
 
 model User {
@@ -35,4 +72,251 @@ model User {
   updatedAt                  DateTime  @updatedAt
 
   @@map("users")
+}
+
+model Vendor {
+   id          String    @id @default(uuid())
+   name        String    @db.VarChar(120)
+   phone       String?
+   email       String?
+   address     String?
+   notes       String?
+   createdAt   DateTime  @default(now())
+   updatedAt   DateTime  @updatedAt
+
+   sourceBatches SourceBatch[]
+   purchases     Purchase[]
+
+   @@map("vendors")
+ }
+
+model Product {
+  id               String    @id @default(uuid())
+  name             String    @db.VarChar(120)
+  description      String?   @db.Text
+  category         String?   @db.VarChar(72)
+  shopifyProductId String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  variants ProductVariant[]
+  sourceBatches SourceBatch[]
+  decantStocks DecantStock[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id               String    @id @default(uuid())
+  productId        String
+  sizeMl           Int
+  price            Float
+  shopifyVariantId String?   @unique
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems     OrderItem[]
+  decantSessions DecantSession[]
+  decantStock    DecantStock?
+
+  @@unique([productId, sizeMl])
+  @@map("product_variants")
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  shopifyOrderId  String?       @unique
+  source          SourceType    @default(MANUAL)
+  customerName    String        @db.VarChar(120)
+  customerPhone   String?
+  customerEmail   String?
+  customerAddress String?       @db.Text
+  customerPincode String?
+  status          OrderStatus   @default(NEW)
+  paymentStatus   PaymentStatus @default(PENDING)
+  subtotal        Float
+  discount        Float         @default(0)
+  total           Float
+  tax             Float         @default(0)
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items OrderItem[]
+  shipment Shipment?
+  orderCharge OrderCharge?
+  remittances Remittance[]
+
+  @@index([status, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                String    @id @default(uuid())
+  orderId           String
+  productVariantId  String
+  productName       String    @db.VarChar(120)
+  variantLabel      String    @db.VarChar(72)
+  qty               Int
+  rate              Float
+  total             Float
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productVariant  ProductVariant @relation(fields: [productVariantId], references: [id])
+
+  @@map("order_items")
+}
+
+model SourceBatch {
+  id          String    @id @default(uuid())
+  productId   String
+  batchNo     String    @db.VarChar(72)
+  totalMl     Int
+  wastageMl   Int       @default(0)
+  costPerMl   Float
+  totalCost   Float
+  vendorId    String?
+  purchaseDate DateTime
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  vendor    Vendor?    @relation(fields: [vendorId], references: [id])
+  sessions  DecantSession[]
+  purchases Purchase[]
+
+  @@unique([productId, batchNo])
+  @@map("source_batches")
+}
+
+model DecantSession {
+  id           String    @id @default(uuid())
+  sourceBatchId String
+  productVariantId String
+  qtyProduced  Int
+  mlPerUnit    Int
+  wastageMl    Int       @default(0)
+  totalMlUsed  Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sourceBatch    SourceBatch    @relation(fields: [sourceBatchId], references: [id])
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id])
+
+  @@map("decant_sessions")
+}
+
+model DecantStock {
+  id               String    @id @default(uuid())
+  productVariantId String    @unique
+  productId        String
+  totalMl          Int       @default(0)
+  qtyAvailable     Int       @default(0)
+  lowStockThreshold Int      @default(5)
+  lastUpdated      DateTime  @default(now()) @updatedAt
+
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("decant_stocks")
+}
+
+model Purchase {
+  id            String       @id @default(uuid())
+  vendorId      String
+  sourceBatchId String?
+  amount        Float
+  paidAmount    Float        @default(0)
+  dueAmount     Float        @default(0)
+  paymentStatus PaymentStatus @default(PENDING)
+  purchaseDate  DateTime
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  vendor      Vendor       @relation(fields: [vendorId], references: [id])
+  sourceBatch SourceBatch? @relation(fields: [sourceBatchId], references: [id])
+
+  @@index([vendorId, purchaseDate])
+  @@map("purchases")
+}
+
+model Shipment {
+   id                String         @id @default(uuid())
+   orderId           String         @unique
+   awb               String?        @unique
+   courierCompanyId  Int?
+   courierName       String?
+   status            ShipmentStatus @default(CREATED)
+   weight            Float?
+   length            Float?
+   breadth           Float?
+   height            Float?
+   shippingCharge    Float?
+   pickupScheduled   Boolean        @default(false)
+   pickupDate        DateTime?
+   labelUrl          String?
+   manifestUrl       String?
+   channelOrderId    Int?
+   shiprocketOrderId Int?
+   trackingUrl       String?
+   shippingAddress   Json?
+   createdAt         DateTime       @default(now())
+   updatedAt         DateTime       @updatedAt
+
+   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+   @@index([orderId])
+   @@index([awb])
+   @@index([status])
+   @@map("shipments")
+}
+
+model Expense {
+   id          String   @id @default(uuid())
+   category    String   @db.VarChar(72)
+   amount      Float
+   expenseDate DateTime
+   notes       String?
+   createdAt   DateTime @default(now())
+   updatedAt   DateTime @updatedAt
+
+   @@index([category, expenseDate])
+   @@map("expenses")
+}
+
+model OrderCharge {
+   id             String   @id @default(uuid())
+   orderId        String   @unique
+   shippingCharge Float    @default(0)
+   gatewayCharge  Float    @default(0)
+   createdAt      DateTime @default(now())
+   updatedAt      DateTime @updatedAt
+
+   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+   @@index([orderId])
+   @@map("order_charges")
+}
+
+model Remittance {
+   id                     String    @id @default(uuid())
+   orderId                String
+   shiprocketSettlementId String?   @unique
+   amount                 Float
+   settlementDate         DateTime
+   status                 String    @db.VarChar(24) @default("PENDING")
+   createdAt              DateTime  @default(now())
+   updatedAt              DateTime  @updatedAt
+
+   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+   @@index([orderId])
+   @@index([settlementDate])
+   @@map("remittances")
 }

@@ -3,13 +3,19 @@ import apiController from '../controller/apiController.js'
 import rateLimit from '../middleware/rateLimit.js'
 import userController from '../controller/userController.js'
 import authentication from '../middleware/authentication.js'
+import authorizeRoles from '../middleware/authorize.js'
 import productRouter from './productRouter.js'
 import orderRouter from './orderRouter.js'
 import inventoryRouter from './inventoryRouter.js'
 import vendorRouter from './vendorRouter.js'
 import purchaseRouter from './purchaseRouter.js'
 import shipmentRouter from './shipmentRouter.js'
+import expenseRouter from './expenseRouter.js'
+import accountsRouter from './accountsRouter.js'
+import reportsRouter from './reportsRouter.js'
+import * as accountsController from '../controller/accountsController.js'
 import * as webhookController from '../controller/webhookController.js'
+import { syncProducts, syncOrders } from '../service/shopifySyncService.js'
 import httpResponse from '../util/httpResponse.js'
 import httpError from '../util/httpError.js'
 
@@ -20,49 +26,53 @@ router.route('/').get((req, res) => {
     res.status(200).json({ message: 'API is working!' })
 })
 router.route('/self').get(apiController.self)
-
 router.route('/health').get(apiController.health)
 
-// User router
+// User auth routes (public / unauthenticated)
 router.route('/register').post(userController.register)
 router.route('/confirmation/:token').put(userController.confirmation)
-router.route('/login').get(userController.login)
-router.route('/self-identification').get(authentication, userController.selfIdentification)
-router.route('/logout').put(authentication, userController.logout)
+router.route('/login').post(userController.login)
 router.route('/refresh-token').post(userController.refreshToken)
 router.route('/forgot-password').put(userController.forgotPassword)
 router.route('/reset-password/:token').put(userController.resetPassword)
+
+// User auth routes (authenticated)
+router.route('/self-identification').get(authentication, userController.selfIdentification)
+router.route('/logout').put(authentication, userController.logout)
 router.route('/change-password').put(authentication, userController.changePassword)
 
-// Phase 1 routes
-router.use('/products', productRouter)
-router.use('/orders', orderRouter)
-router.use('/inventory', inventoryRouter)
-router.use('/vendors', vendorRouter)
-router.use('/purchases', purchaseRouter)
+// Operational routes (Admin, Manager, User accessible)
+router.use('/products', authentication, authorizeRoles('admin', 'manager', 'user'), productRouter)
+router.use('/orders', authentication, authorizeRoles('admin', 'manager', 'user'), orderRouter)
+router.use('/inventory', authentication, authorizeRoles('admin', 'manager', 'user'), inventoryRouter)
+router.use('/shipments', authentication, authorizeRoles('admin', 'manager', 'user'), shipmentRouter)
+router.use('/expenses', authentication, authorizeRoles('admin', 'manager', 'user'), expenseRouter)
 
-// Phase 2 routes
-router.use('/shipments', shipmentRouter)
-
-// Phase 3 routes
-import expenseRouter from './expenseRouter.js'
-import accountsRouter from './accountsRouter.js'
-import * as accountsController from '../controller/accountsController.js'
-import reportsRouter from './reportsRouter.js'
-router.use('/expenses', expenseRouter)
-router.use('/accounts', accountsRouter)
-router.use('/reports', reportsRouter)
+// Admin-only routes (Vendor, Accounts, Reports, Purchases)
+router.use('/vendors', authentication, authorizeRoles('admin'), vendorRouter)
+router.use('/purchases', authentication, authorizeRoles('admin'), purchaseRouter)
+router.use('/accounts', authentication, authorizeRoles('admin'), accountsRouter)
+router.use('/reports', authentication, authorizeRoles('admin'), reportsRouter)
 router.route('/orders/:id/charges')
-    .get(accountsController.getOrderCharge)
-    .put(accountsController.upsertOrderCharge)
+    .get(authentication, authorizeRoles('admin'), accountsController.getOrderCharge)
+    .put(authentication, authorizeRoles('admin'), accountsController.upsertOrderCharge)
 
-// Shopify sync
-import { syncProducts } from '../service/shopifySyncService.js'
+// Shopify sync (Admin only)
 router.route('/shopify/sync/products')
-    .post(async (req, res, next) => {
+    .post(authentication, authorizeRoles('admin'), async (req, res, next) => {
         try {
             const result = await syncProducts()
             httpResponse(req, res, 200, 'Shopify product sync completed', result)
+        } catch (error) {
+            httpError(next, error, req, 500)
+        }
+    })
+
+router.route('/shopify/sync/orders')
+    .post(authentication, authorizeRoles('admin'), async (req, res, next) => {
+        try {
+            const result = await syncOrders()
+            httpResponse(req, res, 200, 'Shopify order sync completed', result)
         } catch (error) {
             httpError(next, error, req, 500)
         }
@@ -77,3 +87,4 @@ router.route('/webhooks/shopify/orders/cancelled')
     .post(webhookController.handleOrdersCancelled)
 
 export default router
+
