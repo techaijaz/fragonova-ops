@@ -15,4 +15,5 @@ yarn-error.log*
 package-lock.json
 .kilo/
 .kilocode/
+shopify-ai-toolkit/skills/
 .agent/
