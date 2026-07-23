@@ -1,6 +1,12 @@
 import dotenvFlow from 'dotenv-flow'
 
-dotenvFlow.config()
+if (process.env.NODE_ENV !== 'production') {
+    try {
+        dotenvFlow.config()
+    } catch {
+        // Local only — Railway injects env vars directly
+    }
+}
 
 export default {
     // General
