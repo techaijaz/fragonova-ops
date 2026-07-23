@@ -1,6 +1,8 @@
-import { PrismaClient } from '@prisma/client'
+import pkg from '@prisma/client'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import config from './config.js'
+
+const { PrismaClient } = pkg
 
 const adapter = new PrismaMariaDb({
     host: config.DB.HOST,
