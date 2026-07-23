@@ -2,7 +2,8 @@ import prisma from '../config/prisma.js'
 import responseMessage from '../constant/phase1ResponseMessage.js'
 import httpError from '../util/httpError.js'
 import httpResponse from '../util/httpResponse.js'
-import { Prisma } from '@prisma/client'
+import pkg from '@prisma/client'
+const { Prisma } = pkg
 
 export const getAllPurchases = async (req, res, next) => {
     try {
