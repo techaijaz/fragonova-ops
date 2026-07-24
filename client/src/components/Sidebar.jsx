@@ -2,29 +2,31 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
   Package, ShoppingCart, FlaskConical, Truck, LayoutDashboard,
-  Ship, Wallet, TrendingUp, Settings as SettingsIcon, LogOut, ShieldCheck
+  Ship, Wallet, TrendingUp, Settings as SettingsIcon, LogOut, Users, Shield
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useLogout } from '../hooks/useAuth'
 import usePermissions from '../hooks/usePermissions'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/orders', icon: ShoppingCart, label: 'Orders' },
-  { to: '/products', icon: Package, label: 'Products' },
-  { to: '/inventory', icon: FlaskConical, label: 'Inventory' },
-  { to: '/vendors', icon: Truck, label: 'Vendors', roles: ['admin'] },
-  { to: '/shipping', icon: Ship, label: 'Shipping' },
-  { to: '/accounts', icon: Wallet, label: 'Accounts', roles: ['admin'] },
-  { to: '/reports', icon: TrendingUp, label: 'Reports', roles: ['admin'] },
-  { to: '/settings', icon: SettingsIcon, label: 'Settings' }
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', module: 'dashboard' },
+  { to: '/orders', icon: ShoppingCart, label: 'Orders', module: 'orders' },
+  { to: '/products', icon: Package, label: 'Products', module: 'products' },
+  { to: '/inventory', icon: FlaskConical, label: 'Inventory', module: 'inventory' },
+  { to: '/vendors', icon: Truck, label: 'Vendors', module: 'vendors' },
+  { to: '/shipping', icon: Ship, label: 'Shipping', module: 'shipping' },
+  { to: '/accounts', icon: Wallet, label: 'Accounts', module: 'accounts' },
+  { to: '/reports', icon: TrendingUp, label: 'Reports', module: 'reports' },
+  { to: '/users', icon: Users, label: 'User Management', module: 'users' },
+  { to: '/permissions', icon: Shield, label: 'Roles & Permissions', module: 'rbac' },
+  { to: '/settings', icon: SettingsIcon, label: 'Settings', module: 'settings' }
 ]
 
 export default function Sidebar() {
   const { user } = useAuth()
   const logout = useLogout()
   const navigate = useNavigate()
-  const { role } = usePermissions()
+  const { can } = usePermissions()
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -38,11 +40,8 @@ export default function Sidebar() {
     })
   }
 
-  // Filter items based on user role
-  const visibleNavItems = navItems.filter(item => {
-    if (!item.roles) return true
-    return item.roles.includes(role)
-  })
+  // Filter sidebar by RBAC matrix (admin sees all via can())
+  const visibleNavItems = navItems.filter((item) => can(item.module, 'canView'))
 
   const getRoleBadgeStyle = (r) => {
     switch (r) {

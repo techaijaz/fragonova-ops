@@ -5,7 +5,6 @@ import GuestRoute from '../components/GuestRoute'
 
 // Auth pages (public / guest-only)
 import LoginPage from '../pages/auth/LoginPage'
-import SignupPage from '../pages/auth/SignupPage'
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage'
 import ConfirmationPage from '../pages/auth/ConfirmationPage'
@@ -19,6 +18,8 @@ import Vendors from '../pages/Vendors'
 import Shipping from '../pages/Shipping'
 import Accounts from '../pages/Accounts'
 import Reports from '../pages/Reports'
+import Users from '../pages/Users'
+import RolesPermissions from '../pages/RolesPermissions'
 import ChangePasswordPage from '../pages/auth/ChangePasswordPage'
 import Settings from '../pages/Settings'
 
@@ -27,7 +28,7 @@ export default function AppRoutes() {
     <Routes>
       {/* ── Guest-only routes (redirect to dashboard if logged in) ── */}
       <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
-      <Route path="/signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
+      <Route path="/signup" element={<Navigate to="/login" replace />} />
       <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
       <Route path="/reset-password/:token" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
 
@@ -52,6 +53,8 @@ export default function AppRoutes() {
         <Route path="shipping" element={<Shipping />} />
         <Route path="accounts" element={<ProtectedRoute allowedRoles={['admin']}><Accounts /></ProtectedRoute>} />
         <Route path="reports" element={<ProtectedRoute allowedRoles={['admin']}><Reports /></ProtectedRoute>} />
+        <Route path="users" element={<ProtectedRoute requireManageUsers><Users /></ProtectedRoute>} />
+        <Route path="permissions" element={<ProtectedRoute allowedRoles={['admin']}><RolesPermissions /></ProtectedRoute>} />
         <Route path="settings" element={<Settings />} />
         <Route path="change-password" element={<ChangePasswordPage />} />
       </Route>

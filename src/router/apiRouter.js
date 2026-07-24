@@ -3,8 +3,10 @@ import apiController from '../controller/apiController.js'
 import rateLimit from '../middleware/rateLimit.js'
 import userController from '../controller/userController.js'
 import authentication from '../middleware/authentication.js'
-import authorizeRoles from '../middleware/authorize.js'
+import authorizeRoles, { authorizeManageUsers } from '../middleware/authorize.js'
 import productRouter from './productRouter.js'
+import userManagementRouter from './userManagementRouter.js'
+import rbacRouter from './rbacRouter.js'
 import orderRouter from './orderRouter.js'
 import inventoryRouter from './inventoryRouter.js'
 import vendorRouter from './vendorRouter.js'
@@ -28,8 +30,16 @@ router.route('/').get((req, res) => {
 router.route('/self').get(apiController.self)
 router.route('/health').get(apiController.health)
 
-// User auth routes (public / unauthenticated)
-router.route('/register').post(userController.register)
+// Public signup disabled — users are created via /users (admin / canManageUsers)
+router.route('/register').post((_req, res) => {
+    res.status(403).json({
+        success: false,
+        statusCode: 403,
+        request: { method: _req.method, url: _req.originalUrl },
+        message: 'Public signup is disabled. Contact an administrator to create an account.',
+        data: null
+    })
+})
 router.route('/confirmation/:token').put(userController.confirmation)
 router.route('/login').post(userController.login)
 router.route('/refresh-token').post(userController.refreshToken)
@@ -47,6 +57,12 @@ router.use('/orders', authentication, authorizeRoles('admin', 'manager', 'user')
 router.use('/inventory', authentication, authorizeRoles('admin', 'manager', 'user'), inventoryRouter)
 router.use('/shipments', authentication, authorizeRoles('admin', 'manager', 'user'), shipmentRouter)
 router.use('/expenses', authentication, authorizeRoles('admin', 'manager', 'user'), expenseRouter)
+
+// User management (admin OR canManageUsers permission)
+router.use('/users', authentication, authorizeManageUsers, userManagementRouter)
+
+// Roles & Permissions matrix (admin only)
+router.use('/rbac', authentication, authorizeRoles('admin'), rbacRouter)
 
 // Admin-only routes (Vendor, Accounts, Reports, Purchases)
 router.use('/vendors', authentication, authorizeRoles('admin'), vendorRouter)

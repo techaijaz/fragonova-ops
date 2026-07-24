@@ -25,4 +25,23 @@ export const authorizeRoles = (...allowedRoles) => {
     }
 }
 
+/** Admin always allowed; others need canManageUsers flag (user credentials permission). */
+export const authorizeManageUsers = (req, res, next) => {
+    try {
+        if (!req.authenticatedUser) {
+            return httpError(next, new Error(responseMessage.UNAUTHORIZED), req, 401)
+        }
+
+        const { role, canManageUsers } = req.authenticatedUser
+        const hasFlag = canManageUsers === true || canManageUsers === 1 || canManageUsers === '1'
+        if (role === 'admin' || hasFlag) {
+            return next()
+        }
+
+        return httpError(next, new Error('FORBIDDEN_ACCESS: User management permission required'), req, 403)
+    } catch (error) {
+        httpError(next, error, req, 500)
+    }
+}
+
 export default authorizeRoles

@@ -45,6 +45,32 @@ export default {
             data
         })
     },
+    deleteUser: (id) => {
+        return prisma.user.delete({
+            where: { id }
+        })
+    },
+    listUsers: () => {
+        return prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                canManageUsers: true,
+                permissionOverrides: true,
+                phoneIsoCode: true,
+                phoneCountryCode: true,
+                phoneInternationalNumber: true,
+                timezone: true,
+                accountConfirmationStatus: true,
+                lastLoginAt: true,
+                createdAt: true,
+                updatedAt: true
+            },
+            orderBy: { createdAt: 'desc' }
+        })
+    },
     deleteRefreshToken: (token) => {
         return prisma.user.updateMany({
             where: { refreshToken: token },

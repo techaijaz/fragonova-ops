@@ -110,10 +110,7 @@ export default function LoginPage() {
         </form>
 
         <div className="auth-footer">
-          <p>
-            Don't have an account?{' '}
-            <Link to="/signup">Create one</Link>
-          </p>
+          <p>Accounts are created by an administrator.</p>
         </div>
       </div>
     </div>

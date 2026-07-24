@@ -2,23 +2,19 @@ import { jest, describe, test, expect, beforeEach, afterAll } from '@jest/global
 import request from 'supertest'
 import app from '../src/app.js'
 import databaseService from '../src/service/databaseService.js'
-import prisma, { connection } from '../src/config/prisma.js'
+import prisma from '../src/config/prisma.js'
 
 describe('User Authentication API', () => {
     let findUserSpy
-    let registerUserSpy
 
     beforeEach(() => {
         jest.clearAllMocks()
-        // Use spyOn instead of jest.mock for ESM compatibility in this setup
         findUserSpy = jest.spyOn(databaseService, 'findUserByEmail')
-        registerUserSpy = jest.spyOn(databaseService, 'registerUser')
     })
 
     afterAll(async () => {
         jest.restoreAllMocks()
         await prisma.$disconnect()
-        await connection.end()
     })
 
     describe('POST /api/v1/register', () => {
@@ -30,31 +26,12 @@ describe('User Authentication API', () => {
             consent: true
         }
 
-        test('should register a new user successfully', async () => {
-            findUserSpy.mockResolvedValue(null)
-            registerUserSpy.mockResolvedValue({
-                id: 'uuid-123',
-                email: 'test@example.com',
-                role: 'user'
-            })
-
+        test('should reject public signup (disabled)', async () => {
             const response = await request(app)
                 .post('/api/v1/register')
                 .send(userData)
 
-            expect(response.statusCode).toBe(201)
-            expect(response.body.success).toBe(true)
-            expect(response.body.data.email).toBe('test@example.com')
-        })
-
-        test('should return 422 if user already exists', async () => {
-            findUserSpy.mockResolvedValue({ id: 'existing-id' })
-
-            const response = await request(app)
-                .post('/api/v1/register')
-                .send(userData)
-
-            expect(response.statusCode).toBe(422)
+            expect(response.statusCode).toBe(403)
             expect(response.body.success).toBe(false)
         })
     })

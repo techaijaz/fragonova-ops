@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-export default function ProtectedRoute({ children, allowedRoles }) {
+export default function ProtectedRoute({ children, allowedRoles, requireManageUsers }) {
   const { isAuthenticated, isLoading, user } = useAuth()
   const location = useLocation()
 
@@ -20,7 +20,18 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+  const role = String(user?.role || '').toLowerCase()
+  const hasUserManageFlag =
+    user?.canManageUsers === true ||
+    user?.canManageUsers === 1 ||
+    user?.canManageUsers === '1'
+
+  if (requireManageUsers) {
+    const canManage = role === 'admin' || hasUserManageFlag
+    if (!canManage) {
+      return <Navigate to="/dashboard" replace />
+    }
+  } else if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.map((r) => String(r).toLowerCase()).includes(role)) {
     return <Navigate to="/dashboard" replace />
   }
 

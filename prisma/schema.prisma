@@ -58,6 +58,9 @@ model User {
   timezone                   String
   password                   String
   role                       Role      @default(user)
+  canManageUsers             Boolean   @default(false)
+  /// Per-user special permissions that override the role matrix for selected modules
+  permissionOverrides        Json?
   consent                    Boolean   @default(false)
   accountConfirmationStatus  Boolean   @default(false)
   accountConfirmationToken   String
@@ -72,6 +75,22 @@ model User {
   updatedAt                  DateTime  @updatedAt
 
   @@map("users")
+}
+
+/// Role-based access control matrix (module × action per role)
+model RolePermission {
+  id        String  @id @default(uuid())
+  role      Role
+  module    String  @db.VarChar(40)
+  canView   Boolean @default(false)
+  canCreate Boolean @default(false)
+  canEdit   Boolean @default(false)
+  canDelete Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([role, module])
+  @@map("role_permissions")
 }
 
 model Vendor {

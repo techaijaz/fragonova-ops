@@ -12,6 +12,7 @@ import {
 import quiker from '../util/quiker.js'
 import databaseService from '../service/databaseService.js'
 import { EUserRole } from '../constant/userConstant.js'
+import rbacService from '../service/rbacService.js'
 
 import emailService from '../service/emailService.js'
 import logger from '../util/logger.js'
@@ -195,7 +196,19 @@ export default {
     selfIdentification: async (req, res, next) => {
         try {
             const { authenticatedUser } = req
-            httpResponse(req, res, 200, responceMessage.SUCCESS, authenticatedUser)
+            const safeUser = { ...authenticatedUser }
+            delete safeUser.password
+            delete safeUser.refreshToken
+            delete safeUser.passwordResetToken
+            delete safeUser.accountConfirmationToken
+            delete safeUser.accountConfirmationCode
+
+            const permissions = await rbacService.resolveUserPermissions(safeUser)
+
+            httpResponse(req, res, 200, responceMessage.SUCCESS, {
+                ...safeUser,
+                permissions
+            })
         } catch (error) {
             httpError(next, error, req, 500)
         }
@@ -245,7 +258,7 @@ export default {
                         const decryptedjwt = quiker.verifyToken(refreshToken, config.REFRESH_TOKEN.SECRET)
                         userId = decryptedjwt.userId
                         role = decryptedjwt.role
-                    } catch (err) {
+                    } catch {
                         userId = null
                     }
                     

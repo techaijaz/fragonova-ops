@@ -1,36 +1,74 @@
 import { useAuth } from '../context/AuthContext'
 
+const truthy = (value) => value === true || value === 1 || value === '1' || value === 'true'
+
+/** Fallback when self-identification has not returned RBAC matrix yet */
+const FALLBACK = {
+  admin: null, // admin bypasses checks
+  manager: {
+    dashboard: { canView: true },
+    orders: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    products: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    inventory: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    shipping: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    expenses: { canView: true, canCreate: true, canEdit: true, canDelete: true },
+    settings: { canView: true }
+  },
+  user: {
+    dashboard: { canView: true },
+    orders: { canView: true, canCreate: true, canEdit: true },
+    products: { canView: true, canCreate: true, canEdit: true },
+    inventory: { canView: true, canCreate: true, canEdit: true },
+    shipping: { canView: true, canCreate: true, canEdit: true },
+    expenses: { canView: true, canCreate: true, canEdit: true },
+    settings: { canView: true }
+  }
+}
+
 /**
- * Custom hook to check permissions based on user role.
- * Role Hierarchy:
- * - admin: full access to all modules and actions (including delete)
- * - manager: access to operational modules (Products, Inventory, Orders, Shipping, Expenses), can delete operational items. Cannot access Vendors, Accounts, Reports.
- * - user: access to operational modules (Products, Inventory, Orders, Shipping, Expenses), read/write ONLY (no delete permissions). Cannot access Vendors, Accounts, Reports.
+ * Permissions come from RBAC matrix on the user object (self-identification),
+ * with admin / canManageUsers fallbacks.
  */
 export function usePermissions() {
   const { user } = useAuth()
-  const role = user?.role || 'user'
+  const role = String(user?.role || 'user').toLowerCase()
+  const hasServerPerms = user?.permissions && Object.keys(user.permissions).length > 0
+  const permissions = hasServerPerms ? user.permissions : (FALLBACK[role] || FALLBACK.user)
 
   const isAdmin = role === 'admin'
   const isManager = role === 'manager'
   const isUser = role === 'user'
+  const canManageUsersFlag = truthy(user?.canManageUsers)
+
+  const can = (moduleKey, action = 'canView') => {
+    if (isAdmin) return true
+    if (moduleKey === 'users' && canManageUsersFlag) return true
+    if (moduleKey === 'rbac') return false
+    return !!permissions?.[moduleKey]?.[action]
+  }
+
+  const canManageUsers = isAdmin || canManageUsersFlag || can('users', 'canView')
+  const canManageRbac = isAdmin || can('rbac', 'canView')
 
   return {
     role,
     isAdmin,
     isManager,
     isUser,
+    permissions,
+    can,
+    canManageUsers,
+    canManageRbac,
 
-    // Module access controls
-    canAccessVendors: isAdmin,
-    canAccessAccounts: isAdmin,
-    canAccessReports: isAdmin,
-    canAccessPurchases: isAdmin,
+    canAccessVendors: can('vendors', 'canView'),
+    canAccessAccounts: can('accounts', 'canView'),
+    canAccessReports: can('reports', 'canView'),
+    canAccessPurchases: can('purchases', 'canView'),
+    canAccessUsers: canManageUsers,
 
-    // Operational permissions
-    canDelete: isAdmin || isManager,
-    canEdit: true, // admin, manager, user can edit operational resources
-    canCreate: true // admin, manager, user can create operational resources
+    canDelete: isAdmin || isManager || can('orders', 'canDelete'),
+    canEdit: true,
+    canCreate: true
   }
 }
 
